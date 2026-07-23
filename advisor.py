@@ -64,11 +64,9 @@ def _parse_advice_json(text: str) -> str | None:
 def _from_github_models(ctx: dict) -> tuple[str, str] | None:
     """GitHub Models(OpenAI 호환 무료 추론). 반환: (안내문, 모델표기)"""
     token = (os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN") or "").strip()
-    # 붙여넣기 과정에서 섞인 공백/따옴표 제거
     token = token.strip().strip('"').strip("'").strip()
     if not token:
         return None
-    # HTTP 헤더는 ASCII만 허용 — 토큰에 비ASCII 문자가 있으면 호출 불가(잘못 붙여넣은 토큰)
     if not token.isascii():
         return None
     endpoint = os.getenv("GITHUB_MODELS_ENDPOINT",
@@ -97,7 +95,6 @@ def _from_github_models(ctx: dict) -> tuple[str, str] | None:
         advice = _parse_advice_json(data["choices"][0]["message"]["content"].strip())
         return (advice, f"GitHub Models · {model}") if advice else None
     except Exception:
-        # 네트워크/인증/인코딩 등 어떤 실패든 규칙기반으로 폴백(앱이 죽지 않게)
         return None
 
 
@@ -185,6 +182,40 @@ def _fallback(ctx: dict) -> tuple[str, str]:
     return advice, "규칙 기반(오프라인 폴백)"
 
 
+def _github_diag(ctx: dict) -> str:
+    """GitHub Models 호출이 실패한 '이유'를 사람이 읽을 수 있는 문자열로 반환(진단용)."""
+    raw = os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
+    if not raw:
+        return "GITHUB_TOKEN 미감지 (Secrets에 없거나 키 이름 오타)"
+    token = raw.strip().strip('"').strip("'").strip()
+    if not token:
+        return "토큰 값이 비어 있음"
+    if not token.isascii():
+        return "토큰에 비ASCII 문자 포함 → 새 토큰으로 교체 필요"
+    if not token.startswith(("github_pat_", "ghp_", "gho_")):
+        return f"토큰 형식이 이상함(앞부분: {token[:8]}…) → GitHub PAT가 맞는지 확인"
+    endpoint = os.getenv("GITHUB_MODELS_ENDPOINT",
+                         "https://models.github.ai/inference")
+    model = os.getenv("GITHUB_MODEL", "openai/gpt-4.1")
+    payload = {"model": model,
+               "messages": [{"role": "user", "content": "ping"}], "max_tokens": 5}
+    req = urllib.request.Request(
+        endpoint.rstrip("/") + "/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+        method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=30, context=_ssl_context()) as resp:
+            return f"HTTP {resp.status} 응답은 왔으나 본문 처리 실패(재시도 권장)"
+    except urllib.error.HTTPError as e:
+        code = e.code
+        hint = {401: "토큰 무효/만료", 403: "Models 권한 없음 또는 접근 거부",
+                404: "모델명 오류", 429: "요청 한도 초과"}.get(code, "")
+        return f"HTTP {code} {hint}".strip()
+    except Exception as e:
+        return f"{type(e).__name__}: {e}"
+
+
 def generate_safety_advice(ctx: dict) -> tuple[str, str]:
     """
     Returns (advice_text, model_label)
@@ -192,7 +223,8 @@ def generate_safety_advice(ctx: dict) -> tuple[str, str]:
       model_label : 실제 사용한 AI 모델 표기
                     예) "GitHub Models · openai/gpt-4.1", "규칙 기반(오프라인 폴백)"
     """
-    if os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN"):
+    github_present = bool(os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN"))
+    if github_present:
         res = _from_github_models(ctx)
         if res:
             return res
@@ -208,4 +240,8 @@ def generate_safety_advice(ctx: dict) -> tuple[str, str]:
         res = _from_anthropic(ctx)
         if res:
             return res
-    return _fallback(ctx)
+
+    advice, label = _fallback(ctx)
+    if github_present:
+        label += f" — ⚠️ AI 실패 원인: {_github_diag(ctx)}"
+    return advice, label
