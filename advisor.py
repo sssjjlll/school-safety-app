@@ -63,8 +63,13 @@ def _parse_advice_json(text: str) -> str | None:
 
 def _from_github_models(ctx: dict) -> tuple[str, str] | None:
     """GitHub Models(OpenAI 호환 무료 추론). 반환: (안내문, 모델표기)"""
-    token = os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
+    token = (os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN") or "").strip()
+    # 붙여넣기 과정에서 섞인 공백/따옴표 제거
+    token = token.strip().strip('"').strip("'").strip()
     if not token:
+        return None
+    # HTTP 헤더는 ASCII만 허용 — 토큰에 비ASCII 문자가 있으면 호출 불가(잘못 붙여넣은 토큰)
+    if not token.isascii():
         return None
     endpoint = os.getenv("GITHUB_MODELS_ENDPOINT",
                          "https://models.github.ai/inference")
@@ -91,8 +96,8 @@ def _from_github_models(ctx: dict) -> tuple[str, str] | None:
             data = json.loads(resp.read().decode("utf-8"))
         advice = _parse_advice_json(data["choices"][0]["message"]["content"].strip())
         return (advice, f"GitHub Models · {model}") if advice else None
-    except (urllib.error.URLError, urllib.error.HTTPError,
-            KeyError, IndexError, json.JSONDecodeError, AttributeError):
+    except Exception:
+        # 네트워크/인증/인코딩 등 어떤 실패든 규칙기반으로 폴백(앱이 죽지 않게)
         return None
 
 
@@ -119,8 +124,7 @@ def _from_gemini(ctx: dict) -> tuple[str, str] | None:
         advice = _parse_advice_json(
             data["candidates"][0]["content"]["parts"][0]["text"].strip())
         return (advice, f"Google Gemini · {model}") if advice else None
-    except (urllib.error.URLError, urllib.error.HTTPError,
-            KeyError, IndexError, json.JSONDecodeError, AttributeError):
+    except Exception:
         return None
 
 
