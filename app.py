@@ -161,59 +161,18 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ── 다크 모드 토글 & 테마 색 ────────────────────────────────────────────────
-dark = st.sidebar.toggle("🌙 다크 모드", key="dark_mode",
-                         help="어두운 배경으로 전환합니다")
-
-# 플로틀리/카드용 테마 색 (라이트 ↔ 다크)
-TXT     = "#e6edf6" if dark else "#172033"   # 차트 본문 글씨
-TITLE   = "#e6edf6" if dark else "#000000"   # 차트 제목 (라이트=검정)
-PANEL   = "#17324c" if dark else "#eaf2ff"   # 게이지 배경
-BARCLR  = "#4f8df7" if dark else "#1e5aa0"   # 막대/게이지 채움
-GRID    = "#2b3a4d" if dark else "#e6ecf5"   # 그리드·제로라인
-CARD_BG     = "#16202e" if dark else "#ffffff"
-CARD_BORDER = "#2b3a4d" if dark else "#dbe3ef"
-CARD_SUB    = "#9fb0c6" if dark else "#657086"
-ACC_BLUE  = "#5b9bf0" if dark else "#1e5aa0"
-ACC_GREEN = "#34d399" if dark else "#0f9d72"
-ACC_RED   = "#f87171" if dark else "#dc2626"
-
-if dark:
-    st.markdown(
-        """
-        <style>
-        .stApp{ background:#0e1621 !important; }
-        :root{ --text:#e6edf6; --muted:#9fb0c6; --line:#2b3a4d; --sky:#17324c; --bg:#0e1621; }
-        html, body, [class*="css"], .stMarkdown, .stMarkdown p, label,
-        div[data-testid="stCaptionContainer"]{ color:#dbe6f2 !important; }
-        div[data-testid="stVerticalBlockBorderWrapper"]{
-          background:#16202e !important; border-color:#2b3a4d !important; box-shadow:none !important;
-        }
-        section[data-testid="stSidebar"]{ background:#131b26 !important; border-right-color:#2b3a4d !important; }
-        section[data-testid="stSidebar"] *{ color:#dbe6f2 !important; }
-        div[data-testid="stMetric"]{ background:#16202e !important; border-color:#2b3a4d !important; }
-        div[data-testid="stMetric"] *{ color:#e6edf6 !important; }
-        .note{ background:#16304a !important; border-color:#26456b !important; color:#c7d6ea !important; }
-        .note-strong{ background:#14212f !important; border-color:#26456b !important; color:#e6edf6 !important; }
-        .viz-desc{ color:#c3d0e0 !important; }
-        .section-title{ color:#eaf1fa !important; }
-        .section-title .badge{ background:#1c3350 !important; color:#9dc0ff !important; }
-        h2, .stMarkdown h2{ color:#eaf1fa !important; }
-        .target-tag{ background:#16304a !important; border-color:#26456b !important; color:#9dc0ff !important; }
-        div[data-baseweb="select"] > div{ background:#1b2736 !important; border-color:#33455c !important; }
-        div[data-baseweb="select"] *{ color:#e6edf6 !important; }
-        div[data-baseweb="popover"] div, div[data-baseweb="popover"] li{
-          background:#1b2736 !important; color:#e6edf6 !important;
-        }
-        input, textarea{ color:#e6edf6 !important; }
-        .pbar-track{ background:#22303f !important; border-color:#33455c !important; }
-        .pbar-label{ color:#eaf1fa !important; }
-        [data-testid="stDataFrame"]{ background:#16202e !important; }
-        hr{ border-top-color:#2b3a4d !important; }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+# ── 차트/카드 색 (라이트 고정) ─────────────────────────────────────────────
+TXT     = "#172033"   # 차트 본문 글씨
+TITLE   = "#000000"   # 차트 제목 (검정)
+PANEL   = "#eaf2ff"   # 게이지 배경
+BARCLR  = "#1e5aa0"   # 막대/게이지 채움
+GRID    = "#e6ecf5"   # 그리드·제로라인
+CARD_BG     = "#ffffff"
+CARD_BORDER = "#dbe3ef"
+CARD_SUB    = "#657086"
+ACC_BLUE  = "#1e5aa0"
+ACC_GREEN = "#0f9d72"
+ACC_RED   = "#dc2626"
 
 # 위험등급 색상 & 그라데이션 (등급색 상자, 살짝 그라데이션)
 GRADE_COLOR = {
