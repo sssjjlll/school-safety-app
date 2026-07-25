@@ -44,63 +44,69 @@ st.markdown(
     """
     <style>
     :root{
-      --navy:#0f2c52; --navy2:#1d4e89; --accent:#2b6cb0;
-      --ink:#1a2733; --muted:#5b6b7d; --line:#dce3ec; --soft:#f4f6f9;
+      --navy:#10243e; --blue:#2563eb; --blue-d:#1e5aa0; --sky:#eaf2ff;
+      --bg:#f4f7fb; --text:#172033; --muted:#657086; --line:#dbe3ef;
+      --green:#0f9d72; --amber:#d97706; --red:#dc2626;
+      --shadow:0 12px 30px rgba(16,36,62,.09);
     }
     html, body, [class*="css"]{
-      font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",
+      font-family:"Pretendard","Noto Sans KR","Apple SD Gothic Neo",
                   -apple-system,BlinkMacSystemFont,sans-serif;
-      color:var(--ink);
+      color:var(--text);
     }
-    .stApp{ background:#ffffff; }
-    .block-container{ max-width:1080px; padding-top:1.2rem; padding-bottom:4rem; }
+    .stApp{ background:var(--bg); }
+    .block-container{ max-width:1240px; padding-top:1.1rem; padding-bottom:4rem; }
 
-    /* 상단 기관 헤더 */
-    .gov-header{
-      display:flex; align-items:center; gap:16px;
-      background:linear-gradient(100deg,var(--navy),var(--navy2));
-      color:#fff; border-radius:12px; padding:22px 26px; margin-bottom:6px;
+    /* 상단 헤더 배너 (네이비 그라데이션) */
+    .app-header{
+      background:linear-gradient(135deg,#0b1f38,#173f70); color:#fff;
+      border-radius:20px; padding:30px 30px 34px; margin:2px 0 22px;
+      box-shadow:var(--shadow);
     }
-    .gov-emblem{
-      width:52px; height:52px; flex:none; border-radius:10px;
-      background:rgba(255,255,255,.14); display:flex; align-items:center;
-      justify-content:center; font-size:26px;
-    }
-    .gov-org{ font-size:22px; font-weight:800; letter-spacing:-.02em; line-height:1.25; }
-    .gov-sub{ font-size:13px; opacity:.85; margin-top:4px; }
-    .gov-strip{
-      height:4px; border-radius:2px; margin:0 0 22px;
-      background:linear-gradient(90deg,var(--navy2) 0%,#3d7ec0 50%,#7fb0dd 100%);
-    }
+    .app-header .eyebrow{ font-size:13px; letter-spacing:.12em; font-weight:800; color:#a9ccff; }
+    .app-header .title{ font-size:30px; font-weight:850; margin:8px 0 6px; letter-spacing:-.01em; }
+    .app-header .subtitle{ max-width:840px; color:#d9e7fa; line-height:1.65; font-size:15px; }
 
-    /* 섹션 제목 — 좌측 네이비 악센트 바 */
-    .stMarkdown h3{
-      color:var(--navy); font-size:20px; font-weight:800; letter-spacing:-.01em;
-      border-left:5px solid var(--navy2); padding-left:12px;
-      margin:6px 0 6px;
+    /* 섹션 제목 + 번호 뱃지 */
+    .section-title{
+      display:flex; align-items:center; gap:10px; font-size:18px;
+      font-weight:800; color:var(--navy); margin:8px 0 6px;
+    }
+    .section-title .badge{
+      width:28px; height:28px; border-radius:9px; display:grid; place-items:center;
+      background:var(--sky); color:var(--blue); font-size:14px; font-weight:800; flex:none;
     }
     h2, .stMarkdown h2{ color:var(--navy); }
 
-    /* 분석 대상 라벨 */
+    /* 분석 대상 태그 */
     .target-tag{
-      display:inline-block; background:var(--soft); border:1px solid var(--line);
-      border-radius:8px; padding:8px 14px; font-size:15px; font-weight:700;
-      color:var(--navy); margin:2px 0 10px;
+      display:inline-block; background:var(--sky); border:1px solid #cfe0fb;
+      border-radius:10px; padding:9px 14px; font-size:14.5px; font-weight:750;
+      color:var(--blue-d); margin:2px 0 14px;
     }
 
     /* 버튼 */
     .stButton > button{
-      background:var(--navy); color:#fff; border:none; border-radius:8px;
-      font-weight:700; padding:10px 16px;
+      background:var(--blue); color:#fff; border:none; border-radius:10px;
+      font-weight:750; padding:10px 16px;
     }
-    .stButton > button:hover{ background:var(--navy2); color:#fff; }
+    .stButton > button:hover{ background:var(--blue-d); color:#fff; }
+
+    /* selectbox */
+    div[data-baseweb="select"] > div{ border-radius:11px; border-color:#cbd6e5; }
 
     /* 사이드바 */
-    section[data-testid="stSidebar"]{ background:var(--soft); border-right:1px solid var(--line); }
-    section[data-testid="stSidebar"] h2{ font-size:17px; }
+    section[data-testid="stSidebar"]{ background:#fff; border-right:1px solid var(--line); }
+    section[data-testid="stSidebar"] h2{ font-size:17px; color:var(--navy); }
 
-    /* 구분선 여백 축소 */
-    hr{ margin:1.1rem 0; border-color:var(--line); }
+    /* st.metric 카드화 (SHAP 요약) */
+    div[data-testid="stMetric"]{
+      background:#fff; border:1px solid var(--line); border-radius:14px;
+      padding:12px 14px; box-shadow:0 6px 16px rgba(16,36,62,.05);
+    }
+
+    /* 구분선 */
+    hr{ margin:1.1rem 0; border:none; border-top:1px solid var(--line); }
 
     /* 표·그래프 가로 스크롤 */
     [data-testid="stDataFrame"], .stPlotlyChart{ overflow-x:auto; }
@@ -108,8 +114,9 @@ st.markdown(
     /* 모바일 */
     @media (max-width: 640px){
       .block-container{ padding:1rem .8rem 3rem !important; }
-      .gov-org{ font-size:18px; }
-      .stMarkdown h3{ font-size:16px; }
+      .app-header{ padding:22px 20px 26px; }
+      .app-header .title{ font-size:23px; }
+      .section-title{ font-size:16px; }
       div[data-testid="stHorizontalBlock"]{ flex-wrap:wrap !important; }
       div[data-testid="stHorizontalBlock"] > div[data-testid="column"]{
         flex:1 1 100% !important; width:100% !important; min-width:100% !important;
@@ -120,25 +127,41 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 위험등급 색상 — 신호등 체계(공식 문서 톤으로 채도 절제)
+# 위험등급 색상 — 신호등 체계(HTML 팔레트: red→amber→green)
 GRADE_COLOR = {
-    "1등급_초고위험": "#a4262c",
-    "2등급_심각위험": "#c8493a",
-    "3등급_고위험": "#d97b28",
-    "4등급_중점관리": "#c9a227",
-    "5등급_일반위험": "#3f8f5b",
-    "6등급_저위험": "#2f7d4f",
+    "1등급_초고위험": "#dc2626",
+    "2등급_심각위험": "#e5484d",
+    "3등급_고위험": "#d97706",
+    "4등급_중점관리": "#ca8a04",
+    "5등급_일반위험": "#16a34a",
+    "6등급_저위험": "#0f9d72",
 }
+
+# HTML 스타일 섹션 제목(번호 뱃지) 렌더러
+def section_title(num, text):
+    st.markdown(
+        f'<div class="section-title"><span class="badge">{num}</span>{text}</div>',
+        unsafe_allow_html=True,
+    )
+
+# plotly 공통 테마(밝은 카드 배경에 맞춤)
+def _theme(fig, height, top=52):
+    fig.update_layout(
+        height=height, margin=dict(l=10, r=10, t=top, b=10),
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Pretendard, Noto Sans KR, sans-serif",
+                  color="#172033", size=13),
+    )
+    return fig
 
 st.markdown(
     """
-    <div style="padding:4px 0 2px;">
-      <div style="font-size:26px;font-weight:800;color:#1a2733;letter-spacing:-.02em;">
-        🏫 학교안전사고 예방 의사결정 지원 시스템</div>
-      <div style="font-size:13px;color:#7a869a;margin-top:5px;">
-        위험등급 분류 · 예상 보상금 예측 · CRITIC-TOPSIS 우선순위 · SHAP 해석 기반</div>
+    <div class="app-header">
+      <div class="eyebrow">SCHOOL SAFETY DECISION SUPPORT</div>
+      <div class="title">🏫 학교안전사고 예방 의사결정 지원 시스템</div>
+      <div class="subtitle">학교급·사고장소·사고형태를 선택하면 위험등급 분류 · 예상 보상금 예측 ·
+        CRITIC-TOPSIS 우선순위 · SHAP 해석을 한 화면에서 제공합니다.</div>
     </div>
-    <hr style="margin:14px 0 8px;border:none;border-top:1px solid #e5e8ee;">
     """,
     unsafe_allow_html=True,
 )
@@ -157,8 +180,11 @@ with st.sidebar:
 
 if not run and "result" not in st.session_state:
     st.markdown(
-        '<div style="background:#f4f6f9;border:1px solid #dce3ec;border-radius:10px;'
-        'padding:20px 22px;font-size:15px;color:#1a2733;">'
+        '<div style="background:#fff;border:1px solid #dbe3ef;border-radius:16px;'
+        'padding:22px 24px;font-size:15px;color:#172033;'
+        'box-shadow:0 8px 20px rgba(16,36,62,.05);">'
+        '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;'
+        'background:#0f9d72;margin-right:8px;"></span>'
         '왼쪽 <b>사고 조건 입력</b>에서 학교급 · 사고장소 · 사고형태를 선택한 뒤 '
         '<b>[예방 우선순위 분석]</b> 버튼을 눌러 주십시오.</div>',
         unsafe_allow_html=True,
@@ -184,42 +210,59 @@ st.markdown(
 # ===========================================================================
 # 1. 결과 카드 4종
 # ===========================================================================
-c1, c2, c3, c4 = st.columns(4)
+c1, c2, c3, c4 = st.columns([1.35, 1, 1, 1])
 
 
-def card(col, label, value, sub, color):
+def hero_card(col, label, value, sub, accent):
     col.markdown(
         f"""
-        <div style="background:#ffffff;border:1px solid #dce3ec;
-                    border-top:4px solid {color};border-radius:10px;
-                    padding:16px 16px 14px;min-height:120px;margin-bottom:10px;
-                    box-shadow:0 1px 3px rgba(15,44,82,.05);">
-          <div style="font-size:12.5px;color:#5b6b7d;font-weight:600;
-                      letter-spacing:-.01em;">{label}</div>
-          <div style="font-size:clamp(19px,4.6vw,25px);font-weight:800;color:{color};
-                      margin-top:8px;line-height:1.2;">{value}</div>
-          <div style="font-size:12px;color:#8a94a6;margin-top:7px;">{sub}</div>
+        <div style="background:linear-gradient(135deg,#14345c,#1e5aa0);color:#fff;
+                    border-top:4px solid {accent};border-radius:17px;
+                    padding:18px 19px;min-height:120px;margin-bottom:10px;
+                    box-shadow:0 10px 24px rgba(16,36,62,.16);">
+          <div style="font-size:12px;font-weight:750;color:#bdd7f6;
+                      text-transform:uppercase;letter-spacing:.06em;">{label}</div>
+          <div style="font-size:clamp(19px,4.4vw,23px);font-weight:850;
+                      margin-top:8px;line-height:1.25;">{value}</div>
+          <div style="font-size:12px;color:#d3e4f8;margin-top:9px;line-height:1.45;">{sub}</div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
 
-card(c1, "위험등급", grade.replace("_", " "),
-     f"6단계 중 {r['위험등급_index'] + 1}단계", grade_color)
-card(c2, "예상 보상금", f"{r['예상보상금']:,}원",
-     "사고 1건당 예측 총보상액", "#7a5195")
-card(c3, "사고 빈도", f"{r['사고빈도']:,}건",
-     "연간 발생 추정 건수", "#2b6cb0")
-card(c4, "예방 우선순위", f"{r['예방우선순위']}위",
-     f"전체 {r['전체_사고유형수']}개 사고유형 중", "#2f7d6b")
+def metric_card(col, label, value, sub, accent):
+    col.markdown(
+        f"""
+        <div style="background:#fff;border:1px solid #dbe3ef;border-radius:17px;
+                    padding:18px 19px;min-height:120px;margin-bottom:10px;
+                    box-shadow:0 8px 20px rgba(16,36,62,.05);">
+          <div style="font-size:12px;font-weight:750;color:#657086;
+                      text-transform:uppercase;letter-spacing:.06em;">{label}</div>
+          <div style="font-size:clamp(20px,4.6vw,24px);font-weight:850;color:{accent};
+                      margin-top:9px;line-height:1.2;">{value}</div>
+          <div style="font-size:12px;color:#657086;margin-top:6px;">{sub}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+hero_card(c1, "위험등급", grade.replace("_", " "),
+          f"6단계 중 {r['위험등급_index'] + 1}단계 · 상대적 개선 우선순위", grade_color)
+metric_card(c2, "예상 보상금", f"{r['예상보상금']:,}원",
+            "사고 1건당 예측 총보상액", "#1e5aa0")
+metric_card(c3, "사고 빈도", f"{r['사고빈도']:,}건",
+            "연간 발생 추정 건수", "#0f9d72")
+metric_card(c4, "예방 우선순위", f"{r['예방우선순위']}위",
+            f"전체 {r['전체_사고유형수']}개 사고유형 중", "#dc2626")
 
 st.divider()
 
 # ===========================================================================
 # 2. 위험도 시각화 (위험확률 · TOPSIS · 예상보상금 · 사고빈도 · SHAP)
 # ===========================================================================
-st.markdown("### 위험도 시각화")
+section_title(1, "위험도 시각화")
 st.caption(
     "왼쪽은 이 사고유형의 종합 예방 우선순위 점수(TOPSIS), "
     "오른쪽은 그 점수를 만들어 낸 세부 지표(예방 우선순위 선정 근거)입니다."
@@ -231,27 +274,26 @@ def gauge(title, value, color):
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=round(value * 100, 1),
-        number={"suffix": "%"},
-        title={"text": title, "font": {"size": 16}},
+        number={"suffix": "%", "font": {"color": "#10243e"}},
+        title={"text": title, "font": {"size": 16, "color": "#10243e"}},
         gauge={
             "axis": {"range": [0, 100]},
             "bar": {"color": color},
             "steps": [
-                {"range": [0, 40], "color": "#eafaf1"},
-                {"range": [40, 70], "color": "#fef9e7"},
-                {"range": [70, 100], "color": "#fdedec"},
+                {"range": [0, 40], "color": "#eaf2ff"},
+                {"range": [40, 70], "color": "#fff3df"},
+                {"range": [70, 100], "color": "#fdeaea"},
             ],
         },
     ))
-    fig.update_layout(height=250, margin=dict(l=10, r=10, t=50, b=10))
-    return fig
+    return _theme(fig, height=250)
 
 
 g1, g2 = st.columns([1, 1.1])
 
 with g1:
     # TOPSIS 근접계수 게이지 + 설명
-    st.plotly_chart(gauge("TOPSIS 근접계수", norm["TOPSIS"], "#16a085"),
+    st.plotly_chart(gauge("TOPSIS 근접계수", norm["TOPSIS"], "#1e5aa0"),
                     use_container_width=True)
     st.markdown(
         "**TOPSIS 근접계수** : 위험확률·예상보상금·사고빈도 세 지표를 결합하여, "
@@ -264,7 +306,7 @@ with g2:
     bar = go.Figure()
     metrics = ["위험확률", "예상보상금", "사고빈도"]
     vals = [norm["위험확률"], norm["예상보상금"], norm["사고빈도"]]
-    colors = ["#e74c3c", "#8e44ad", "#2980b9"]
+    colors = ["#dc2626", "#d97706", "#2563eb"]
     bar.add_trace(go.Bar(
         x=[v * 100 for v in vals], y=metrics, orientation="h",
         marker_color=colors,
@@ -272,11 +314,11 @@ with g2:
     ))
     bar.update_layout(
         title="예방 우선순위 선정 근거",
-        xaxis=dict(range=[0, 115], title="지표 수준 (0~100%)"),
+        xaxis=dict(range=[0, 115], title="지표 수준 (0~100%)",
+                   gridcolor="#e6ecf5", zerolinecolor="#e6ecf5"),
         yaxis=dict(autorange="reversed"),
-        height=300, margin=dict(l=10, r=10, t=50, b=10),
     )
-    st.plotly_chart(bar, use_container_width=True)
+    st.plotly_chart(_theme(bar, height=300), use_container_width=True)
     st.caption("위 TOPSIS 점수를 구성하는 세 지표입니다. "
                "각 막대가 높을수록 그 지표가 예방 우선순위를 끌어올린 것입니다.")
 
@@ -285,7 +327,7 @@ st.divider()
 # ===========================================================================
 # 3. SHAP 분석 (기여 요인 시각화 + 중요 요인 요약 통합)
 # ===========================================================================
-st.markdown("### SHAP 분석 — 무엇이 이 사고의 위험을 높였나")
+section_title(2, "SHAP 분석 — 무엇이 이 사고의 위험을 높였나")
 st.caption(
     "SHAP은 위험등급 예측에 각 입력 요인(학교급·사고장소·사고형태)이 "
     "**얼마나, 어느 방향으로 기여했는지**를 수치로 설명합니다. "
@@ -301,7 +343,7 @@ with sh1:
     shap_max = float(shap_df["기여도"].max())
     sfig = go.Figure(go.Bar(
         x=shap_df["기여도"], y=shap_df["요인"], orientation="h",
-        marker_color="#a4262c", width=0.66,
+        marker_color="#1e5aa0", width=0.66,
         text=[f"+{v:.3f}" for v in shap_df["기여도"]],
         textposition="outside", cliponaxis=False,
         textfont=dict(size=15),
@@ -309,13 +351,13 @@ with sh1:
     sfig.update_layout(
         title="요인별 위험등급 상승 기여도 (SHAP value)",
         xaxis=dict(title="위험등급 상승 기여도 (클수록 위험 ↑)",
-                   range=[0, shap_max * 1.22]),
-        height=400, margin=dict(l=10, r=24, t=55, b=10),
+                   range=[0, shap_max * 1.22],
+                   gridcolor="#e6ecf5", zerolinecolor="#e6ecf5"),
         yaxis=dict(autorange="reversed", automargin=True,
                    tickfont=dict(size=14)),
         bargap=0.3,
     )
-    st.plotly_chart(sfig, use_container_width=True)
+    st.plotly_chart(_theme(sfig, height=400, top=55), use_container_width=True)
 
 with sh2:
     st.markdown("**요인별 기여도**")
@@ -323,9 +365,9 @@ with sh2:
         st.metric(row["요인"], f"+{row['기여도']:.3f}", "위험 상승 기여")
 
 st.markdown(
-    f'<div style="background:#f4f6f9;border-left:4px solid #1d4e89;'
-    f'border-radius:0 8px 8px 0;padding:14px 18px;font-size:15px;'
-    f'line-height:1.7;color:#1a2733;">'
+    f'<div style="background:#f5f9ff;border:1px solid #cdddf5;border-left:4px solid #2563eb;'
+    f'border-radius:0 12px 12px 0;padding:14px 18px;font-size:15px;'
+    f'line-height:1.7;color:#172033;">'
     f'가장 큰 위험 상승 요인은 <b>{top_shap["요인"]}</b> '
     f'(기여도 +{top_shap["기여도"]:.3f})으로, 위험등급 예측을 높이는 방향으로 '
     f'가장 강하게 작용했습니다. 이 요인을 우선적으로 관리하면 위험을 가장 효과적으로 '
@@ -338,7 +380,7 @@ st.divider()
 # ===========================================================================
 # 4. 예방 우선순위 선정 이유 (문장)
 # ===========================================================================
-st.markdown("### 예방 우선순위 선정 이유")
+section_title(3, "예방 우선순위 선정 이유")
 
 
 def priority_reason(res: dict) -> str:
@@ -363,9 +405,9 @@ def priority_reason(res: dict) -> str:
 
 
 st.markdown(
-    f'<div style="background:#f4f6f9;border-left:4px solid #2f7d6b;'
-    f'border-radius:0 8px 8px 0;padding:16px 18px;font-size:15px;'
-    f'line-height:1.75;color:#1a2733;">{priority_reason(r)}</div>',
+    f'<div style="background:#f5f9ff;border:1px solid #cdddf5;border-left:4px solid #0f9d72;'
+    f'border-radius:0 12px 12px 0;padding:16px 18px;font-size:15px;'
+    f'line-height:1.75;color:#172033;">{priority_reason(r)}</div>',
     unsafe_allow_html=True,
 )
 
@@ -374,7 +416,7 @@ st.divider()
 # ===========================================================================
 # 5. AI Safety Advisor
 # ===========================================================================
-st.markdown("### AI 예방 자문 (AI Safety Advisor)")
+section_title(4, "AI 예방 자문 (AI Safety Advisor)")
 st.caption("학교급·사고장소·사고형태·위험등급·보상금·빈도·우선순위를 종합해 "
            "시설 점검·운영·안전교육을 아우르는 예방 안내를 한 문단으로 알려드립니다.")
 
@@ -393,9 +435,9 @@ if "advice" in st.session_state:
     model_label = st.session_state.get("advice_model", "규칙 기반(오프라인 폴백)")
     st.markdown(
         f"""
-        <div style="background:#fbfcfe;border:1px solid #dce3ec;
-                    border-left:4px solid #1d4e89;border-radius:0 10px 10px 0;
-                    padding:18px 20px;font-size:15.5px;line-height:1.8;color:#1a2733;">
+        <div style="background:#f5f9ff;border:1px solid #cdddf5;
+                    border-left:4px solid #2563eb;border-radius:0 12px 12px 0;
+                    padding:18px 20px;font-size:15.5px;line-height:1.8;color:#172033;">
           {advice}
         </div>
         """,
@@ -408,7 +450,7 @@ st.divider()
 # ===========================================================================
 # 6. Top10 예방 우선관리 사고 (표)
 # ===========================================================================
-st.markdown("### 예방 우선관리 대상 상위 10건")
+section_title(5, "예방 우선관리 대상 상위 10건")
 top10 = get_top10_priority()
 show = top10.copy()
 show["위험확률"] = (show["위험확률"] * 100).round(1).astype(str) + "%"
