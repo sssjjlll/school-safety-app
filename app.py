@@ -27,7 +27,7 @@ for _k in ("GITHUB_TOKEN", "GITHUB_MODEL", "GEMINI_API_KEY",
 
 from backend import (
     SCHOOL_LEVELS, PLACES, ACCIDENT_TYPES, RISK_GRADES,
-    analyze_accident, get_top10_priority,
+    analyze_accident, get_top10_priority, model_status, load_error,
 )
 from advisor import generate_safety_advice
 
@@ -197,6 +197,19 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+# 실제 모델이 로드되지 않고 데모(모의) 모드로 폴백된 경우 눈에 띄게 안내
+if model_status() == "mock":
+    _reason = load_error() or "원인 불명"
+    st.warning(
+        "⚠️ 현재 **데모(모의) 모드**로 동작 중입니다 — 실제 학습 모델"
+        "(model_artifacts.pkl)이 로드되지 않았습니다. 이 경우 Top10 표와 "
+        "'예방 우선순위' 수치가 서로 다르게 보일 수 있습니다.\n\n"
+        f"**로드 실패 사유:** {_reason}\n\n"
+        "→ GitHub 레포에 model_artifacts.pkl 커밋과 requirements.txt의 "
+        "`lightgbm==4.7.0`·`joblib` 설치를 확인한 뒤 앱을 재부팅해 주세요.",
+        icon="⚠️",
+    )
 
 # ---------------------------------------------------------------------------
 # 입력 영역
@@ -604,16 +617,18 @@ def _pdf_iframe(src: str):
     )
 
 
-def guide_block(g: dict):
-    st.markdown(
-        f'<div style="font-weight:800;color:#10243e;font-size:15px;'
-        f'margin:12px 0 6px;">📘 {g["title"]}</div>',
-        unsafe_allow_html=True,
-    )
-    did = _drive_id(g.get("drive", ""))
-    url = (g.get("url") or "").strip()
-    path = (g.get("path") or "").strip()
-    key = g["title"]
+def _doc_row(src: dict, key: str, label: str = ""):
+    """한 문서(src)의 [📥 다운로드] [👁 미리보기] 한 줄을 그린다.
+       label 이 있으면 하위 항목(• 라벨)로 표시."""
+    did = _drive_id(src.get("drive", ""))
+    url = (src.get("url") or "").strip()
+    path = (src.get("path") or "").strip()
+    if label:
+        st.markdown(
+            f'<div style="font-weight:700;color:#334155;font-size:14px;'
+            f'margin:8px 0 4px;">• {label}</div>',
+            unsafe_allow_html=True,
+        )
     ca, cb = st.columns(2)
 
     # 다운로드 버튼
@@ -655,8 +670,24 @@ def guide_block(g: dict):
                 st.info("20MB 이상 로컬 PDF는 미리보기가 제한됩니다. "
                         "구글 드라이브(drive) 방식을 사용해 주세요.")
         else:
-            st.info("소스가 설정되지 않았습니다. GUIDES 의 drive/url/path "
+            st.info("소스가 설정되지 않았습니다. drive/url/path "
                     "중 하나를 채워 주세요.")
+
+
+def guide_block(g: dict):
+    # 큰 제목 상자
+    st.markdown(
+        f'<div style="font-weight:800;color:#10243e;font-size:15px;'
+        f'margin:12px 0 6px;">📘 {g["title"]}</div>',
+        unsafe_allow_html=True,
+    )
+    if g.get("items"):
+        # 그룹: 제목 아래에 학급별 하위 문서를 나열
+        for it in g["items"]:
+            _doc_row(it, key=f"{g['title']}_{it['title']}", label=it["title"])
+    else:
+        # 단일 문서
+        _doc_row(g, key=g["title"])
 
 
 with st.container(border=True):

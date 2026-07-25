@@ -102,20 +102,53 @@ FEATURE_COLS = ["학교급", "사고장소", "사고형태"]
 # ---------------------------------------------------------------------------
 # 아티팩트 로드 (1회 캐시)
 # ---------------------------------------------------------------------------
+_LOAD_ERROR = None  # 아티팩트 로드 실패 사유(진단용)
+
+
 @lru_cache(maxsize=1)
 def _load_artifacts():
-    """model_artifacts.pkl 을 로드한다. 없거나 실패하면 None 을 반환(→ mock 폴백)."""
+    """model_artifacts.pkl 을 로드한다. 없거나 실패하면 None 을 반환(→ mock 폴백).
+       실패 시 사유를 _LOAD_ERROR 에 기록한다."""
+    global _LOAD_ERROR
     try:
         import joblib
-        art = joblib.load(_ARTIFACT_PATH)
-        return art
     except Exception as e:  # noqa: BLE001
-        print(f"[backend] 아티팩트 로드 실패 → mock 폴백: {e}")
+        _LOAD_ERROR = f"joblib 미설치({e}) — requirements.txt 에 joblib 추가 필요"
+        print(f"[backend] {_LOAD_ERROR}")
         return None
+    if not os.path.exists(_ARTIFACT_PATH):
+        _LOAD_ERROR = (f"파일을 찾을 수 없음: {_ARTIFACT_PATH} — "
+                       f"GitHub 레포에 model_artifacts.pkl 을 커밋해야 함")
+        print(f"[backend] {_LOAD_ERROR}")
+        return None
+    try:
+        art = joblib.load(_ARTIFACT_PATH)
+        _LOAD_ERROR = None
+        return art
+    except ModuleNotFoundError as e:  # 대개 lightgbm 미설치
+        _LOAD_ERROR = (f"의존성 누락({e}) — requirements.txt 에 "
+                       f"lightgbm==4.7.0 (및 joblib) 설치 필요")
+        print(f"[backend] 아티팩트 로드 실패 → mock 폴백: {_LOAD_ERROR}")
+        return None
+    except Exception as e:  # noqa: BLE001
+        _LOAD_ERROR = f"{type(e).__name__}: {e}"
+        print(f"[backend] 아티팩트 로드 실패 → mock 폴백: {_LOAD_ERROR}")
+        return None
+
+
+def load_error():
+    """마지막 아티팩트 로드 실패 사유(없으면 None)."""
+    _load_artifacts()  # 상태 보장
+    return _LOAD_ERROR
 
 
 def _grade_index(grade: str) -> int:
     return RISK_GRADES.index(grade) if grade in RISK_GRADES else 3
+
+
+def model_status() -> str:
+    """실제 학습 모델 로드 여부를 반환한다: 'real'(model_artifacts.pkl 로드됨) 또는 'mock'(폴백)."""
+    return "real" if _load_artifacts() is not None else "mock"
 
 
 def _shap_list(school, place, acc_type, s_school, s_place, s_type) -> list:
@@ -336,10 +369,10 @@ def _mock_top10() -> pd.DataFrame:
         for p in PLACES:
             for t in ACCIDENT_TYPES:
                 r = _mock_analyze(s, p, t)
-                rows.append({"사고유형": f"{s}-{p}-{t}", "학교급": s, "사고장소": p,
+                rows.append({"순위": r["예방우선순위"],  # analyze 와 동일 기준(일관성)
+                             "사고유형": f"{s}-{p}-{t}", "학교급": s, "사고장소": p,
                              "사고형태": t, "위험등급": r["위험등급"],
                              "위험확률": r["위험확률"], "예상보상금": r["예상보상금"],
                              "사고빈도": r["사고빈도"], "TOPSIS_CC": r["TOPSIS_CC"]})
     df = pd.DataFrame(rows).sort_values("TOPSIS_CC", ascending=False).reset_index(drop=True)
-    df.insert(0, "순위", df.index + 1)
     return df.head(10)
