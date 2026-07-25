@@ -36,7 +36,7 @@ from advisor import generate_safety_advice
 # ---------------------------------------------------------------------------
 st.set_page_config(
     page_title="학교안전사고 예방 의사결정 지원 시스템",
-    page_icon="🏫",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="auto",
 )
@@ -211,7 +211,7 @@ st.markdown(
     """
     <div class="app-header">
       <div class="eyebrow">SCHOOL SAFETY DECISION SUPPORT</div>
-      <div class="title">🏫 학교안전사고 예방 의사결정 지원 시스템</div>
+      <div class="title">학교안전사고 예방 의사결정 지원 시스템</div>
       <div class="subtitle">학교급·사고장소·사고형태를 선택하면 위험등급 분류 · 예상 보상금 예측 ·
         CRITIC-TOPSIS 우선순위 · SHAP 해석을 한 화면에서 제공합니다.</div>
     </div>
@@ -223,13 +223,13 @@ st.markdown(
 if model_status() == "mock":
     _reason = load_error() or "원인 불명"
     st.warning(
-        "⚠️ 현재 **데모(모의) 모드**로 동작 중입니다 — 실제 학습 모델"
+        "현재 **데모(모의) 모드**로 동작 중입니다 — 실제 학습 모델"
         "(model_artifacts.pkl)이 로드되지 않았습니다. 이 경우 Top10 표와 "
         "'예방 우선순위' 수치가 서로 다르게 보일 수 있습니다.\n\n"
         f"**로드 실패 사유:** {_reason}\n\n"
         "→ GitHub 레포에 model_artifacts.pkl 커밋과 requirements.txt의 "
         "`scikit-learn`·`lightgbm==4.7.0`·`joblib` 설치를 확인한 뒤 앱을 재부팅해 주세요.",
-        icon="⚠️",
+        icon=None,
     )
 
 # ---------------------------------------------------------------------------
@@ -406,25 +406,29 @@ with st.container(border=True):
     section_title(2, "SHAP 분석 — 무엇이 이 사고의 위험을 높였나")
     note("SHAP은 위험등급 예측에 각 입력 요인(학교급·사고장소·사고형태)이 "
          "<b>얼마나, 어느 방향으로 기여했는지</b>를 수치로 설명합니다. "
-         "값이 클수록(+) 위험등급을 더 크게 끌어올린 요인입니다.")
+         "양(+)의 값은 위험을 높인 요인, 음(−)의 값은 위험을 낮춘 요인입니다.")
 
     sh1, sh2 = st.columns([1.6, 1])
     with sh1:
-        shap_max = float(shap_df["기여도"].max())
+        _sv = shap_df["기여도"].astype(float)
+        _lo = min(0.0, float(_sv.min())); _hi = max(0.0, float(_sv.max()))
+        _pad = (_hi - _lo) * 0.20 or 0.01
+        _bar_colors = [BARCLR if v >= 0 else ACC_GREEN for v in _sv]
         sfig = go.Figure(go.Bar(
-            x=shap_df["기여도"], y=shap_df["요인"], orientation="h",
-            marker=dict(color=BARCLR, cornerradius=9), width=0.6,
-            text=[f"+{v:.3f}" for v in shap_df["기여도"]],
+            x=_sv, y=shap_df["요인"], orientation="h",
+            marker=dict(color=_bar_colors, cornerradius=9), width=0.6,
+            text=[f"{v:+.3f}" for v in _sv],
             textposition="outside", cliponaxis=False,
             textfont=dict(size=15, color=TXT),
         ))
         sfig.update_layout(
-            title={"text": "요인별 위험등급 상승 기여도 (SHAP value)",
+            title={"text": "요인별 위험등급 기여도 (SHAP value)",
                    "font": {"color": TITLE, "weight": "normal"}},
-            xaxis=dict(title=dict(text="위험등급 상승 기여도 (클수록 위험 ↑)",
+            xaxis=dict(title=dict(text="기여도 ( + 위험 상승  ·  − 위험 감소 )",
                                   font=dict(color=TXT)),
-                       range=[0, shap_max * 1.22], tickfont=dict(color=TXT),
-                       gridcolor=GRID, zerolinecolor=GRID),
+                       range=[_lo - _pad, _hi + _pad], tickfont=dict(color=TXT),
+                       gridcolor=GRID, zeroline=True, zerolinecolor="#9aa7bd",
+                       zerolinewidth=2),
             yaxis=dict(autorange="reversed", automargin=True,
                        tickfont=dict(size=14, color=TXT)),
             bargap=0.35,
@@ -434,15 +438,20 @@ with st.container(border=True):
     with sh2:
         st.markdown("**요인별 기여도**")
         for _, row in shap_df.iterrows():
-            st.metric(row["요인"], f"+{row['기여도']:.3f}", "위험 상승 기여")
+            _v = float(row["기여도"])
+            st.metric(row["요인"], f"{_v:+.3f}",
+                      "위험 상승 기여" if _v >= 0 else "위험 감소 기여",
+                      delta_color="off")
 
-    st.markdown(
-        f'<div class="note-strong">가장 큰 위험 상승 요인은 <b>{top_shap["요인"]}</b> '
-        f'(기여도 +{top_shap["기여도"]:.3f})으로, 위험등급 예측을 높이는 방향으로 '
-        f'가장 강하게 작용했습니다. 이 요인을 우선적으로 관리하면 위험을 가장 효과적으로 '
-        f'낮출 수 있습니다.</div>',
-        unsafe_allow_html=True,
-    )
+    _tv = float(top_shap["기여도"])
+    if _tv >= 0:
+        _shap_msg = (f'가장 큰 위험 상승 요인은 <b>{top_shap["요인"]}</b> '
+                     f'(기여도 {_tv:+.3f})으로, 위험등급 예측을 높이는 방향으로 가장 강하게 '
+                     f'작용했습니다. 이 요인을 우선적으로 관리하면 위험을 가장 효과적으로 낮출 수 있습니다.')
+    else:
+        _shap_msg = (f'이 조합에서는 세 요인이 대체로 위험을 낮추는 방향으로 작용했습니다 '
+                     f'(가장 큰 값: <b>{top_shap["요인"]}</b> {_tv:+.3f}).')
+    st.markdown(f'<div class="note-strong">{_shap_msg}</div>', unsafe_allow_html=True)
 
 # ===========================================================================
 # 4. 예방 우선순위 선정 이유
@@ -652,7 +661,7 @@ def _pdf_iframe(src: str):
 
 
 def _doc_row(src: dict, key: str, label: str = ""):
-    """한 문서(src)의 [📥 다운로드] [👁 미리보기] 한 줄을 그린다.
+    """한 문서(src)의 [다운로드] [미리보기] 한 줄을 그린다.
        label 이 있으면 하위 항목(• 라벨)로 표시."""
     did = _drive_id(src.get("drive", ""))
     url = (src.get("url") or "").strip()
@@ -669,26 +678,26 @@ def _doc_row(src: dict, key: str, label: str = ""):
     with ca:
         if did:
             st.link_button(
-                "📥 다운로드",
+                "다운로드",
                 f"https://drive.google.com/uc?export=download&id={did}",
                 use_container_width=True,
             )
         elif url:
-            st.link_button("📥 다운로드", url, use_container_width=True)
+            st.link_button("다운로드", url, use_container_width=True)
         elif path and os.path.exists(path):
             with open(path, "rb") as f:
                 st.download_button(
-                    "📥 다운로드", f, file_name=os.path.basename(path),
+                    "다운로드", f, file_name=os.path.basename(path),
                     mime="application/pdf", use_container_width=True,
                     key=f"dl_{key}",
                 )
         else:
-            st.button("📥 다운로드 (경로 미설정)", disabled=True,
+            st.button("다운로드 (경로 미설정)", disabled=True,
                       use_container_width=True, key=f"dl_{key}")
 
     # 미리보기 버튼(토글)
     with cb:
-        show = st.toggle("👁 미리보기", key=f"pv_{key}")
+        show = st.toggle("미리보기", key=f"pv_{key}")
 
     if show:
         if did:
@@ -712,7 +721,7 @@ def guide_block(g: dict):
     # 큰 제목 상자
     st.markdown(
         f'<div style="font-weight:800;color:#10243e;font-size:15px;'
-        f'margin:12px 0 6px;">📘 {g["title"]}</div>',
+        f'margin:12px 0 6px;">{g["title"]}</div>',
         unsafe_allow_html=True,
     )
     if g.get("items"):
