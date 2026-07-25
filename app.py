@@ -207,7 +207,7 @@ if model_status() == "mock":
         "'예방 우선순위' 수치가 서로 다르게 보일 수 있습니다.\n\n"
         f"**로드 실패 사유:** {_reason}\n\n"
         "→ GitHub 레포에 model_artifacts.pkl 커밋과 requirements.txt의 "
-        "`lightgbm==4.7.0`·`joblib` 설치를 확인한 뒤 앱을 재부팅해 주세요.",
+        "`scikit-learn`·`lightgbm==4.7.0`·`joblib` 설치를 확인한 뒤 앱을 재부팅해 주세요.",
         icon="⚠️",
     )
 

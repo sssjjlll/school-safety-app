@@ -125,9 +125,9 @@ def _load_artifacts():
         art = joblib.load(_ARTIFACT_PATH)
         _LOAD_ERROR = None
         return art
-    except ModuleNotFoundError as e:  # 대개 lightgbm 미설치
+    except ModuleNotFoundError as e:  # 대개 scikit-learn 또는 lightgbm 미설치
         _LOAD_ERROR = (f"의존성 누락({e}) — requirements.txt 에 "
-                       f"lightgbm==4.7.0 (및 joblib) 설치 필요")
+                       f"scikit-learn, lightgbm==4.7.0, joblib 설치 필요")
         print(f"[backend] 아티팩트 로드 실패 → mock 폴백: {_LOAD_ERROR}")
         return None
     except Exception as e:  # noqa: BLE001
