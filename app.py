@@ -57,7 +57,7 @@ st.markdown(
       color:var(--text);
     }
     .stApp{ background:var(--bg); }
-    .block-container{ max-width:1240px; padding-top:1.1rem; padding-bottom:4rem; }
+    .block-container{ max-width:1240px; padding-top:3rem; padding-bottom:4rem; }
 
     /* 상단 헤더 배너 (네이비 그라데이션) */
     .app-header{
@@ -126,16 +126,22 @@ st.markdown(
       padding:12px 14px; box-shadow:0 6px 16px rgba(16,36,62,.05);
     }
 
-    /* progress bar 색 (안전관리 점검률) */
-    div[data-testid="stProgress"] div[role="progressbar"] > div{
+    /* 안전관리 점검률 바 (직접 렌더: 흰 트랙 + 남색 채움) */
+    .pbar-track{
+      background:#ffffff; border:1px solid #d7e0ec; border-radius:99px;
+      height:14px; overflow:hidden; margin:2px 0 8px;
+    }
+    .pbar-fill{
+      height:100%; border-radius:99px; transition:width .4s ease;
       background:linear-gradient(90deg,#4f8df7,#1e5aa0);
     }
+    .pbar-label{ font-weight:750; color:#10243e; font-size:14px; margin:8px 0 2px; }
 
     hr{ margin:1.1rem 0; border:none; border-top:1px solid var(--line); }
     [data-testid="stDataFrame"], .stPlotlyChart{ overflow-x:auto; }
 
     @media (max-width: 640px){
-      .block-container{ padding:1rem .8rem 3rem !important; }
+      .block-container{ padding:2.4rem .8rem 3rem !important; }
       .app-header{ padding:22px 20px 26px; }
       .app-header .title{ font-size:23px; }
       .section-title{ font-size:16px; }
@@ -525,8 +531,13 @@ with st.container(border=True):
     total = len(checked_flags)
     rate = (done / total * 100) if total else 0.0
 
-    st.progress(done / total if total else 0.0,
-                text=f"안전관리 점검률  {rate:.0f}%   ({done}/{total} 완료)")
+    st.markdown(
+        f'<div class="pbar-label">안전관리 점검률  {rate:.0f}%   '
+        f'({done}/{total} 완료)</div>'
+        f'<div class="pbar-track"><div class="pbar-fill" '
+        f'style="width:{rate:.0f}%;"></div></div>',
+        unsafe_allow_html=True,
+    )
     if unchecked:
         items_html = "".join(
             f'<div style="margin:6px 0;">• {it}</div>' for it in unchecked
