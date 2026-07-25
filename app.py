@@ -580,7 +580,6 @@ GUIDES = [
          {"title": "초등 3-4학년", "drive":"https://drive.google.com/file/d/1f2vhrS3GPFHnQVFnDt3oDXRES9JDc0e0/view?usp=sharing","url": "", "path": ""},
          {"title": "초등 5-6학년", "drive": "https://drive.google.com/file/d/18gHnPZYP5ZGewE3GidJ2jeqq2_LCZARM/view?usp=sharing","url": "", "path": ""},
          {"title": "중등", "drive": "https://drive.google.com/file/d/1IG4VrT2SpoE-i0FTvxts-7Ralc2ntnOS/view?usp=sharing","url": "", "path": ""},
-         {"title": "고등", "drive": "","url": "", "path": ""},
     ]},
 ]
 
