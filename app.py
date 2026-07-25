@@ -98,6 +98,12 @@ st.markdown(
       border-radius:0 12px 12px 0; padding:15px 18px; font-size:15px;
       line-height:1.75; color:var(--text); margin:6px 0 4px;
     }
+    /* 시각화 하단 설명글 통일 (캡션 크기·검정·볼드 없음) */
+    .viz-desc{
+      font-size:0.875rem; line-height:1.55; color:#111;
+      font-weight:400; margin:6px 0 0;
+    }
+    .viz-desc b, .viz-desc strong{ font-weight:400; }
 
     /* 분석 대상 태그 */
     .target-tag{
@@ -155,6 +161,60 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ── 다크 모드 토글 & 테마 색 ────────────────────────────────────────────────
+dark = st.sidebar.toggle("🌙 다크 모드", key="dark_mode",
+                         help="어두운 배경으로 전환합니다")
+
+# 플로틀리/카드용 테마 색 (라이트 ↔ 다크)
+TXT     = "#e6edf6" if dark else "#172033"   # 차트 본문 글씨
+TITLE   = "#e6edf6" if dark else "#000000"   # 차트 제목 (라이트=검정)
+PANEL   = "#17324c" if dark else "#eaf2ff"   # 게이지 배경
+BARCLR  = "#4f8df7" if dark else "#1e5aa0"   # 막대/게이지 채움
+GRID    = "#2b3a4d" if dark else "#e6ecf5"   # 그리드·제로라인
+CARD_BG     = "#16202e" if dark else "#ffffff"
+CARD_BORDER = "#2b3a4d" if dark else "#dbe3ef"
+CARD_SUB    = "#9fb0c6" if dark else "#657086"
+ACC_BLUE  = "#5b9bf0" if dark else "#1e5aa0"
+ACC_GREEN = "#34d399" if dark else "#0f9d72"
+ACC_RED   = "#f87171" if dark else "#dc2626"
+
+if dark:
+    st.markdown(
+        """
+        <style>
+        .stApp{ background:#0e1621 !important; }
+        :root{ --text:#e6edf6; --muted:#9fb0c6; --line:#2b3a4d; --sky:#17324c; --bg:#0e1621; }
+        html, body, [class*="css"], .stMarkdown, .stMarkdown p, label,
+        div[data-testid="stCaptionContainer"]{ color:#dbe6f2 !important; }
+        div[data-testid="stVerticalBlockBorderWrapper"]{
+          background:#16202e !important; border-color:#2b3a4d !important; box-shadow:none !important;
+        }
+        section[data-testid="stSidebar"]{ background:#131b26 !important; border-right-color:#2b3a4d !important; }
+        section[data-testid="stSidebar"] *{ color:#dbe6f2 !important; }
+        div[data-testid="stMetric"]{ background:#16202e !important; border-color:#2b3a4d !important; }
+        div[data-testid="stMetric"] *{ color:#e6edf6 !important; }
+        .note{ background:#16304a !important; border-color:#26456b !important; color:#c7d6ea !important; }
+        .note-strong{ background:#14212f !important; border-color:#26456b !important; color:#e6edf6 !important; }
+        .viz-desc{ color:#c3d0e0 !important; }
+        .section-title{ color:#eaf1fa !important; }
+        .section-title .badge{ background:#1c3350 !important; color:#9dc0ff !important; }
+        h2, .stMarkdown h2{ color:#eaf1fa !important; }
+        .target-tag{ background:#16304a !important; border-color:#26456b !important; color:#9dc0ff !important; }
+        div[data-baseweb="select"] > div{ background:#1b2736 !important; border-color:#33455c !important; }
+        div[data-baseweb="select"] *{ color:#e6edf6 !important; }
+        div[data-baseweb="popover"] div, div[data-baseweb="popover"] li{
+          background:#1b2736 !important; color:#e6edf6 !important;
+        }
+        input, textarea{ color:#e6edf6 !important; }
+        .pbar-track{ background:#22303f !important; border-color:#33455c !important; }
+        .pbar-label{ color:#eaf1fa !important; }
+        [data-testid="stDataFrame"]{ background:#16202e !important; }
+        hr{ border-top-color:#2b3a4d !important; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
 # 위험등급 색상 & 그라데이션 (등급색 상자, 살짝 그라데이션)
 GRADE_COLOR = {
     "1등급_초고위험": "#dc2626", "2등급_심각위험": "#e5484d",
@@ -187,7 +247,7 @@ def _theme(fig, height, top=52):
         height=height, margin=dict(l=10, r=10, t=top, b=10),
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family="Pretendard, Noto Sans KR, sans-serif",
-                  color="#172033", size=13),
+                  color=TXT, size=13),
     )
     return fig
 
@@ -296,14 +356,14 @@ def hero_card(col, label, value, sub, c_from, c_to):
 def metric_card(col, label, value, sub, accent):
     col.markdown(
         f"""
-        <div style="background:#fff;border:1px solid #dbe3ef;border-radius:17px;
+        <div style="background:{CARD_BG};border:1px solid {CARD_BORDER};border-radius:17px;
                     padding:18px 19px;min-height:120px;margin-bottom:10px;
                     box-shadow:0 8px 20px rgba(16,36,62,.05);">
-          <div style="font-size:12px;font-weight:750;color:#657086;
+          <div style="font-size:12px;font-weight:750;color:{CARD_SUB};
                       text-transform:uppercase;letter-spacing:.06em;">{label}</div>
           <div style="font-size:clamp(20px,4.6vw,24px);font-weight:850;color:{accent};
                       margin-top:9px;line-height:1.2;">{value}</div>
-          <div style="font-size:12px;color:#657086;margin-top:6px;">{sub}</div>
+          <div style="font-size:12px;color:{CARD_SUB};margin-top:6px;">{sub}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -314,11 +374,11 @@ hero_card(c1, "위험등급", grade.replace("_", " "),
           f"6단계 중 {r['위험등급_index'] + 1}단계 · 상대적 개선 우선순위",
           grade_grad[0], grade_grad[1])
 metric_card(c2, "예상 보상금", f"{r['예상보상금']:,}원",
-            "사고 1건당 예측 총보상액", "#1e5aa0")
+            "사고 1건당 예측 총보상액", ACC_BLUE)
 metric_card(c3, "사고 빈도", f"{r['사고빈도']:,}건",
-            "연간 발생 추정 건수", "#0f9d72")
+            "연간 발생 추정 건수", ACC_GREEN)
 metric_card(c4, "예방 우선순위", f"{r['예방우선순위']}위",
-            f"전체 {r['전체_사고유형수']}개 사고유형 중", "#dc2626")
+            f"전체 {r['전체_사고유형수']}개 사고유형 중", ACC_RED)
 
 # ===========================================================================
 # 2. 위험도 시각화
@@ -335,22 +395,24 @@ with st.container(border=True):
         gfig = go.Figure(go.Indicator(
             mode="gauge+number",
             value=round(norm["TOPSIS"] * 100, 1),
-            number={"suffix": "%", "font": {"color": "#10243e"}},
-            title={"text": "TOPSIS 근접계수", "font": {"size": 16, "color": "#10243e"}},
+            number={"suffix": "%", "font": {"color": TXT}},
+            title={"text": "TOPSIS 근접계수",
+                   "font": {"size": 17, "color": TITLE, "weight": "normal"}},
             gauge={
-                "axis": {"range": [0, 100]},
-                "bar": {"color": "#1e5aa0"},
-                "bgcolor": "#eaf2ff",
+                "axis": {"range": [0, 100], "tickfont": {"color": TXT}},
+                "bar": {"color": BARCLR},
+                "bgcolor": PANEL,
                 "borderwidth": 0,
-                "steps": [{"range": [0, 100], "color": "#eaf2ff"}],
+                "steps": [{"range": [0, 100], "color": PANEL}],
             },
         ))
         st.plotly_chart(_theme(gfig, height=250), use_container_width=True)
         st.markdown(
-            "**TOPSIS 근접계수** : 위험확률·예상보상금·사고빈도 세 지표를 결합하여, "
-            "'가장 시급히 관리해야 할 이상적 사고유형'에 얼마나 가까운지를 "
-            "**0~100%로 나타낸 종합 우선순위 점수**입니다. 100%에 가까울수록 "
-            "예방 우선순위가 높습니다."
+            '<div class="viz-desc">TOPSIS 근접계수 : 위험확률·예상보상금·사고빈도 '
+            "세 지표를 결합하여, '가장 시급히 관리해야 할 이상적 사고유형'에 "
+            "얼마나 가까운지를 0~100%로 나타낸 종합 우선순위 점수입니다. "
+            "100%에 가까울수록 예방 우선순위가 높습니다.</div>",
+            unsafe_allow_html=True,
         )
 
     with g2:
@@ -358,22 +420,26 @@ with st.container(border=True):
         vals = [norm["위험확률"], norm["예상보상금"], norm["사고빈도"]]
         bar = go.Figure(go.Bar(
             x=[v * 100 for v in vals], y=metrics, orientation="h",
-            marker=dict(color="#1e5aa0", cornerradius=9),
+            marker=dict(color=BARCLR, cornerradius=9),
             width=0.5,
             text=[f"{v * 100:.0f}%" for v in vals],
             textposition="outside", cliponaxis=False,
-            textfont=dict(size=13, color="#172033"),
+            textfont=dict(size=13, color=TXT),
         ))
         bar.update_layout(
-            title="예방 우선순위 선정 근거",
+            title={"text": "예방 우선순위 선정 근거",
+                   "font": {"size": 17, "color": TITLE, "weight": "normal"}},
             xaxis=dict(range=[0, 118], showgrid=False, zeroline=False,
                        showticklabels=False, title=None),
-            yaxis=dict(autorange="reversed", tickfont=dict(size=14, color="#172033")),
+            yaxis=dict(autorange="reversed", tickfont=dict(size=14, color=TXT)),
             bargap=0.5,
         )
         st.plotly_chart(_theme(bar, height=270, top=52), use_container_width=True)
-        st.caption("위 TOPSIS 점수를 구성하는 세 지표입니다. "
-                   "각 막대가 길수록 그 지표가 예방 우선순위를 끌어올린 것입니다.")
+        st.markdown(
+            '<div class="viz-desc">위 TOPSIS 점수를 구성하는 세 지표입니다. '
+            "각 막대가 길수록 그 지표가 예방 우선순위를 끌어올린 것입니다.</div>",
+            unsafe_allow_html=True,
+        )
 
 # ===========================================================================
 # 3. SHAP 분석
@@ -392,18 +458,20 @@ with st.container(border=True):
         shap_max = float(shap_df["기여도"].max())
         sfig = go.Figure(go.Bar(
             x=shap_df["기여도"], y=shap_df["요인"], orientation="h",
-            marker=dict(color="#1e5aa0", cornerradius=9), width=0.6,
+            marker=dict(color=BARCLR, cornerradius=9), width=0.6,
             text=[f"+{v:.3f}" for v in shap_df["기여도"]],
             textposition="outside", cliponaxis=False,
-            textfont=dict(size=15),
+            textfont=dict(size=15, color=TXT),
         ))
         sfig.update_layout(
-            title="요인별 위험등급 상승 기여도 (SHAP value)",
-            xaxis=dict(title="위험등급 상승 기여도 (클수록 위험 ↑)",
-                       range=[0, shap_max * 1.22],
-                       gridcolor="#e6ecf5", zerolinecolor="#e6ecf5"),
+            title={"text": "요인별 위험등급 상승 기여도 (SHAP value)",
+                   "font": {"color": TITLE, "weight": "normal"}},
+            xaxis=dict(title=dict(text="위험등급 상승 기여도 (클수록 위험 ↑)",
+                                  font=dict(color=TXT)),
+                       range=[0, shap_max * 1.22], tickfont=dict(color=TXT),
+                       gridcolor=GRID, zerolinecolor=GRID),
             yaxis=dict(autorange="reversed", automargin=True,
-                       tickfont=dict(size=14)),
+                       tickfont=dict(size=14, color=TXT)),
             bargap=0.35,
         )
         st.plotly_chart(_theme(sfig, height=380, top=55), use_container_width=True)
