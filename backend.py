@@ -4,7 +4,7 @@ backend.py
 
 train_export.py 가 실제 데이터(accident.xlsx / compensation.xlsx)로 학습·산출해
 저장한 model_artifacts.pkl 을 로드하여 추론한다.
-  - 위험등급 분류(LightGBM, 6클래스)       -> 위험등급 / 위험확률(X1)
+  - 위험등급 분류(LightGBM, 3클래스)       -> 위험등급 / 위험확률(X1)
   - 예상 보상금(실측 평균보상액)             -> 예상 보상금(X2)
   - 사고 빈도(accident 실측, 연평균)          -> 사고 빈도(X3)
   - CRITIC-TOPSIS                            -> 예방 우선순위(TOPSIS_CC)
@@ -59,14 +59,11 @@ ACCIDENT_TYPES = [
     "저온의 물체(드라이아이스 등)·물질 접촉", "익사·익수", "추위에 장시간 노출",
 ]
 
-# 위험등급 라벨 (6단계 타깃, index 0 = 가장 위험)
+# 위험등급 라벨 (3단계 타깃, index 0 = 가장 위험) — K-means(k=3) 군집 기반
 RISK_GRADES = [
     "1등급_초고위험",
     "2등급_심각위험",
     "3등급_고위험",
-    "4등급_중점관리",
-    "5등급_일반위험",
-    "6등급_저위험",
 ]
 
 # SHAP 예방전략 규칙 (노트북 strategy_rules 원본)
