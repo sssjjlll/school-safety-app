@@ -1,5 +1,13 @@
+# ── 런타임 (streamlit run app.py) ────────────────────────────────
 streamlit
 pandas
 numpy
 plotly
 certifi
+joblib                   # model_artifacts.pkl 로드
+lightgbm==4.7.0          # 위험등급 분류기(아티팩트 내 모델) 언피클·추론용 — 버전 일치 권장
+
+# ── 학습 전용 (python train_export.py) — 배포에는 불필요 ──────────
+# openpyxl               # accident.xlsx / compensation.xlsx 로드
+# shap                   # SHAP 기여도 사전계산
+# scikit-learn           # 학습 시 LabelEncoder (아티팩트에는 dict 로 저장돼 런타임 불필요)
