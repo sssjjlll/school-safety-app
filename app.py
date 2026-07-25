@@ -98,10 +98,10 @@ st.markdown(
       border-radius:0 12px 12px 0; padding:15px 18px; font-size:15px;
       line-height:1.75; color:var(--text); margin:6px 0 4px;
     }
-    /* 시각화 하단 설명글 통일 (캡션 크기·검정·볼드 없음) */
+    /* 시각화 하단 설명글 (캡션 크기·회색·볼드 없음, 아래 여백 포함) */
     .viz-desc{
-      font-size:0.875rem; line-height:1.55; color:#111;
-      font-weight:400; margin:6px 0 0;
+      font-size:0.875rem; line-height:1.55; color:#6b7280;
+      font-weight:400; margin:6px 0 16px;
     }
     .viz-desc b, .viz-desc strong{ font-weight:400; }
 
