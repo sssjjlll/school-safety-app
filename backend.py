@@ -282,6 +282,35 @@ def get_top10_priority() -> pd.DataFrame:
     return _mock_top10()  # 폴백
 
 
+def get_grade_distribution() -> pd.DataFrame:
+    """위험등급별 조합 수·비율 (grade_labels 순서)."""
+    from collections import Counter
+    art = _load_artifacts()
+    if art is not None:
+        labels = art["grade_labels"]
+        recs = art["table_records"]
+        c = Counter(r["위험등급"] for r in recs)
+        total = len(recs) or 1
+        return pd.DataFrame([{"위험등급": g, "조합수": int(c.get(g, 0)),
+                              "비율": c.get(g, 0) / total} for g in labels])
+    mock = [542, 1360, 1098][:len(RISK_GRADES)]        # 폴백(mock)
+    total = sum(mock) or 1
+    return pd.DataFrame([{"위험등급": g, "조합수": n, "비율": n / total}
+                         for g, n in zip(RISK_GRADES, mock)])
+
+
+def get_critic_weights() -> pd.DataFrame:
+    """X1·X2·X3 CRITIC 가중치·비율."""
+    LABEL = {"X1_위험확률": "X1 위험확률", "X2_예상보상금": "X2 예상보상금",
+             "X3_사고빈도": "X3 사고빈도"}
+    art = _load_artifacts()
+    w = art["critic_weights"] if art is not None else {
+        "X1_위험확률": 0.6859, "X2_예상보상금": 0.1856, "X3_사고빈도": 0.1285}
+    total = sum(w.values()) or 1
+    return pd.DataFrame([{"지표": LABEL.get(k, k), "CRITIC 가중치": float(v),
+                          "비율": float(v) / total} for k, v in w.items()])
+
+
 def recommend_strategy(feature: str, category: str) -> str:
     default = "현장 점검과 맞춤형 안전교육을 강화"
     for keyword, strategy in STRATEGY_RULES.get(feature, {}).items():

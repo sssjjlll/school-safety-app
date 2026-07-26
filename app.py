@@ -28,6 +28,7 @@ for _k in ("GITHUB_TOKEN", "GITHUB_MODEL", "GEMINI_API_KEY",
 from backend import (
     SCHOOL_LEVELS, PLACES, ACCIDENT_TYPES, RISK_GRADES,
     analyze_accident, get_top10_priority, model_status, load_error,
+    get_grade_distribution, get_critic_weights,
 )
 from advisor import generate_safety_advice
 
@@ -594,7 +595,9 @@ with st.container(border=True):
 # 7. Top10 예방 우선관리 사고 (표)
 # ===========================================================================
 with st.container(border=True):
-    section_title(6, "예방 우선관리 대상 상위 10건")
+    section_title(6, "분석 결과 요약")
+
+    st.markdown("**예방 우선관리 대상 상위 10건**")
     top10 = get_top10_priority()
     show = top10.copy()
     show["위험확률"] = (show["위험확률"] * 100).round(1).astype(str) + "%"
@@ -613,6 +616,23 @@ with st.container(border=True):
         },
     )
     st.caption("TOPSIS 근접계수(CRITIC 가중) 기준 상위 10개 사고유형입니다.")
+
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    c_dist, c_crit = st.columns(2)
+    with c_dist:
+        st.markdown("**위험등급별 조합 수·비율**")
+        gd = get_grade_distribution().copy()
+        gd["조합수"] = gd["조합수"].map(lambda v: f"{v:,}")
+        gd["비율"] = gd["비율"].map(lambda v: f"{v * 100:.1f}%")
+        st.dataframe(gd, use_container_width=True, hide_index=True)
+        st.caption("전체 3,000개 조합의 위험등급 분포입니다.")
+    with c_crit:
+        st.markdown("**CRITIC 객관적 가중치**")
+        cw = get_critic_weights().copy()
+        cw["CRITIC 가중치"] = cw["CRITIC 가중치"].map(lambda v: f"{v:.4f}")
+        cw["비율"] = cw["비율"].map(lambda v: f"{v * 100:.1f}%")
+        st.dataframe(cw, use_container_width=True, hide_index=True)
+        st.caption("세 지표를 데이터 기반으로 가중(합계 = 1)합니다.")
 
 # ===========================================================================
 # 8. 관련 안전 지침 (PDF 다운로드·미리보기)
