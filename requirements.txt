@@ -11,3 +11,4 @@ lightgbm==4.7.0          # 위험등급 분류기(아티팩트 내 모델) 언�
 # ── 학습 전용 (python train_export.py) — 배포에는 불필요 ──────────
 # openpyxl               # accident.xlsx / compensation.xlsx 로드
 # shap                   # SHAP 기여도 사전계산
+# optuna                 # 위험등급 분류기 하이퍼파라미터 튜닝(학습 전용)
